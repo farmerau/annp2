@@ -116,8 +116,8 @@ void network::feedForward(){
         inputSum += (layers[0].getNode(j).getVal() * layers[1].getNode(i).getWeight(j));
       }
       cout << "INPUT SUM: " << inputSum << "\n";
-      cout << "Sigmoid of " << inputSum << " is " << (1/(pow(M_E, (-1*inputSum))+1)) << "\n";
-      layers[1].getNode(i).setVal(1/(pow(M_E, (-1*inputSum))+1));
+      cout << "Sigmoid of " << inputSum << " is " << (1/(exp(-inputSum)+1)) << "\n";
+      layers[1].getNode(i).setVal(1/(exp(-inputSum)+1));
       inputSum = 0;
     }
 
@@ -128,8 +128,8 @@ void network::feedForward(){
         hiddenSum+= (layers[1].getNode(j).getVal() * layers[2].getNode(i).getWeight(j));
       }
       cout << "HIDDENSUM: " << hiddenSum << "\n";
-      cout << "Sigmoid of " << hiddenSum << " is " << (1/(pow(M_E, (-1*hiddenSum))+1));
-      layers[2].getNode(i).setVal(1/(pow(M_E, (-1*hiddenSum))+1));
+      cout << "Sigmoid of " << hiddenSum << " is " << (1/(exp(-hiddenSum)+1));
+      layers[2].getNode(i).setVal(1/(exp(-hiddenSum)+1));
       hiddenSum = 0;
       cout << " " << layers[2].getNode(i).getVal() << " ";
       if (i != 0){
