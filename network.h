@@ -28,6 +28,9 @@ private:
   double* errors;
   double* corrects;
   double* solutions;
+  double* hiddenLayerVals;
+  double* outputLayerVals;
+  double* inputLayerVals;
   double patternMax;
   string weights;
   string patterns;

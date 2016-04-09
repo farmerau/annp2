@@ -8,6 +8,9 @@ network::network(){
   errors = NULL;
   corrects = NULL;
   solutions = NULL;
+  inputLayerVals = NULL;
+  hiddenLayerVals = NULL;
+  outputLayerVals = NULL;
   weights = "weights.in";
   patterns = "patterns.in";
   outputs = "outputs.out";
@@ -98,6 +101,11 @@ void network::feedForward(){
     cout << patterns << " incompatible with this network.";
     exit(2);
   }
+  if (mode == 2){
+    inputLayerVals = new double[numPat*layers[0].getNumNodes()];
+    hiddenLayerVals = new double[numPat*layers[1].getNumNodes()];
+    outputLayerVals = new double[numPat*layers[2].getNumNodes()];
+  }
   outFile.open(outputs.c_str());
   outFile << numPat << "\n";
   for (int cycle = 0; cycle < numPat; cycle++){
@@ -105,6 +113,9 @@ void network::feedForward(){
       double temp;
       patternFile >> temp;
       layers[0].getNode(i).setVal(temp/patternMax);
+      if (mode == 2){
+        inputLayerVals[layers[0].getNumNodes()*i + cycle] = layers[0].getNode(i).getVal();
+      }
     }
 
     for (int i = 0; i < layers[1].getNumNodes(); i++){
@@ -113,21 +124,22 @@ void network::feedForward(){
         cout << layers[0].getNode(j).getVal() << " * " << layers[1].getNode(i).getWeight(j) << " = " << layers[0].getNode(j).getVal() * layers[1].getNode(i).getWeight(j) << "\n";
         inputSum += (layers[0].getNode(j).getVal() * layers[1].getNode(i).getWeight(j));
       }
-      cout << "INPUT SUM: " << inputSum << "\n";
-      cout << "Sigmoid of " << inputSum << " is " << (1/(exp(-inputSum)+1)) << "\n";
       layers[1].getNode(i).setVal(1/(exp(-inputSum)+1));
+      if (mode == 2){
+        hiddenLayerVals[layers[1].getNumNodes()*i + cycle] = layers[1].getNode(i).getVal();
+      }
       inputSum = 0;
     }
-
     for (int i = 0; i < layers[2].getNumNodes(); i++){
       double hiddenSum;
       for (int j = 0; j < layers[2].getNode(i).getNumWeights(); j++){
         cout << layers[1].getNode(j).getVal() << " * " << layers[2].getNode(i).getWeight(j) << " = " << layers[1].getNode(j).getVal() * layers[2].getNode(i).getWeight(j) << "\n";
         hiddenSum+= (layers[1].getNode(j).getVal() * layers[2].getNode(i).getWeight(j));
       }
-      cout << "HIDDENSUM: " << hiddenSum << "\n";
-      cout << "Sigmoid of " << hiddenSum << " is " << (hiddenSum);
       layers[2].getNode(i).setVal(hiddenSum);
+      if (mode == 2){
+        outputLayerVals[layers[2].getNumNodes()*i + cycle] = layers[2].getNode(i).getVal();
+      }
       hiddenSum = 0;
       cout << " " << layers[2].getNode(i).getVal() << " ";
       if (i != 0){
@@ -173,6 +185,7 @@ void network::train(){
     exit (3);
   }
   calculateError(cPatterns, cOutputs);
+  adjustOutWeights();
 }
 
 void network::calculateError(int cPatterns, int cOutputs){
@@ -185,7 +198,7 @@ void network::calculateError(int cPatterns, int cOutputs){
     solutions[i] = temp;
     correctFile >> temp;
     corrects[i] = temp;
-    errors[i] = abs(corrects[i]-solutions[i]) * 1;
+    errors[i] = corrects[i]-solutions[i];
   }
 }
 
@@ -195,8 +208,12 @@ void network::adjustOutWeights(){
   for (int i = 0; i < layers[2].getNumNodes(); i++){
     for (int j = 0; j < layers[1].getNumNodes(); j++){
       for (int k = 0; k < numPat; k++){
-
+        sum += -errors[i] * hiddenLayerVals[layers[1].getNumNodes()*j + k];
       }
+      cout << layers[2].getNode(i).getWeight(j) << " :: ";
+      layers[2].getNode(i).setWeight(j, (layers[2].getNode(i).getWeight(j)-(a*sum)));
+      cout << layers[2].getNode(i).getWeight(j) << "\n";
+      sum = 0;
     }
   }
 }
