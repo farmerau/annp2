@@ -17,7 +17,6 @@ public:
   void readWeights();
   void feedForward();
   void train();
-  void topology();
 private:
   int numLayers;
   layer* layers;

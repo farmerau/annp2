@@ -32,7 +32,6 @@ void network::go(){
   cout << "Options:\n1.)Production Mode\n2.)Training Mode\n>>";
   cin >> mode;
   feedForward();
-  //topology();
 }
 
 void network::readWeights(){
@@ -186,15 +185,4 @@ void network::train(){
     errors[i] = abs(corrects[i]-solutions[i]) * 1;
   }
 
-}
-
-void network::topology(){
-/*  cout << "Hidden Layer Weights To Input Nodes...\n";
-  for (int i = 0; i < layers[1].getNumNodes(); i++){
-    cout << "\tNode " << i << ":\n";
-    for (int j = 0; j < layers[1].getNode(i).getNumWeights(); j++){
-      cout << " " << layers[1].getNode(i).getWeight(j);
-    }
-    cout << "\n";
-  }*/
 }
