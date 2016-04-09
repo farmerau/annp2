@@ -90,7 +90,6 @@ void network::feedForward(){
     cout << "Error opening " << patterns << "...";
     exit(1);
   }
-  int numPat;
   patternFile >> numPat;
   int inputs;
   patternFile >> inputs;
@@ -173,6 +172,10 @@ void network::train(){
     cout << "Reference file incompatible with this simulation...\n";
     exit (3);
   }
+  calculateError(cPatterns, cOutputs);
+}
+
+void network::calculateError(int cPatterns, int cOutputs){
   errors = new double[(cPatterns*cOutputs)];
   corrects = new double[(cPatterns*cOutputs)];
   solutions = new double[(cPatterns*cOutputs)];
@@ -184,5 +187,24 @@ void network::train(){
     corrects[i] = temp;
     errors[i] = abs(corrects[i]-solutions[i]) * 1;
   }
+}
+
+void network::adjustOutWeights(){
+  double sum = 0.0;
+  double a = 0.1;
+  for (int i = 0; i < layers[2].getNumNodes(); i++){
+    for (int j = 0; j < layers[1].getNumNodes(); j++){
+      for (int k = 0; k < numPat; k++){
+
+      }
+    }
+  }
+}
+
+void network::adjustHiddenWeights(){
+
+}
+
+void network::adjustInputWeights(){
 
 }
