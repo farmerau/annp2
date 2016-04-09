@@ -121,7 +121,6 @@ void network::feedForward(){
     for (int i = 0; i < layers[1].getNumNodes(); i++){
       double inputSum;
       for (int j = 0; j < layers[1].getNode(i).getNumWeights(); j++){
-        cout << layers[0].getNode(j).getVal() << " * " << layers[1].getNode(i).getWeight(j) << " = " << layers[0].getNode(j).getVal() * layers[1].getNode(i).getWeight(j) << "\n";
         inputSum += (layers[0].getNode(j).getVal() * layers[1].getNode(i).getWeight(j));
       }
       layers[1].getNode(i).setVal(1/(exp(-inputSum)+1));
@@ -133,7 +132,6 @@ void network::feedForward(){
     for (int i = 0; i < layers[2].getNumNodes(); i++){
       double hiddenSum;
       for (int j = 0; j < layers[2].getNode(i).getNumWeights(); j++){
-        cout << layers[1].getNode(j).getVal() << " * " << layers[2].getNode(i).getWeight(j) << " = " << layers[1].getNode(j).getVal() * layers[2].getNode(i).getWeight(j) << "\n";
         hiddenSum+= (layers[1].getNode(j).getVal() * layers[2].getNode(i).getWeight(j));
       }
       layers[2].getNode(i).setVal(hiddenSum);
@@ -186,6 +184,7 @@ void network::train(){
   }
   calculateError(cPatterns, cOutputs);
   adjustOutWeights();
+  adjustHiddenWeights();
 }
 
 void network::calculateError(int cPatterns, int cOutputs){
@@ -210,16 +209,29 @@ void network::adjustOutWeights(){
       for (int k = 0; k < numPat; k++){
         sum += -errors[i] * hiddenLayerVals[layers[1].getNumNodes()*j + k];
       }
-      cout << layers[2].getNode(i).getWeight(j) << " :: ";
       layers[2].getNode(i).setWeight(j, (layers[2].getNode(i).getWeight(j)-(a*sum)));
-      cout << layers[2].getNode(i).getWeight(j) << "\n";
       sum = 0;
     }
   }
 }
 
 void network::adjustHiddenWeights(){
+  double sum = 0.0;
+  double b = 0.1;
+  for (int i = 0; i < layers[1].getNumNodes(); i++){
+    for (int j = 0; j < layers[0].getNumNodes(); j++){
+      for (int k = 0; k < numPat; k++){
+        double temp = 0;
+        for (int l = 0; l < layers[2].getNumNodes(); l++){
+          temp += errors[i] * hiddenLayerVals[layers[1].getNumNodes()*i + k];
 
+        sum += (inputLayerVals[layers[0].getNumNodes()*j + k] * (1-inputLayerVals[layers[0].getNumNodes()*j + k])) * temp * inputLayerVals[layers[0].getNumNodes()*j + k];
+      }
+      layers[1].getNode(i).setWeight(j, (layers[1].getNode(i).getWeight(j)-(b*sum)));
+      sum = 0;
+      }
+    }
+  }
 }
 
 void network::adjustInputWeights(){
