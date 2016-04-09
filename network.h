@@ -17,6 +17,9 @@ public:
   void readWeights();
   void feedForward();
   void train();
+  void adjustOutWeights();
+  void adjustHiddenWeights();
+  void adjustInputWeights();
 private:
   int numLayers;
   layer* layers;
