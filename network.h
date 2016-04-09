@@ -17,6 +17,7 @@ public:
   void readWeights();
   void feedForward();
   void train();
+  void calculateError(int, int);
   void adjustOutWeights();
   void adjustHiddenWeights();
   void adjustInputWeights();
