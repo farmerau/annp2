@@ -22,6 +22,7 @@ public:
   void adjustInputWeights();
 private:
   int numLayers;
+  int numPat;
   layer* layers;
   double* errors;
   double* corrects;
