@@ -15,15 +15,16 @@ public:
   int getNumLayers();
   void go();
   void readWeights();
+  void readPatterns();
   void feedForward();
   void train();
   void calculateError(int, int);
   void adjustOutWeights();
   void adjustHiddenWeights();
-  void adjustInputWeights();
 private:
   int numLayers;
   int numPat;
+  int inputs;
   layer* layers;
   double* errors;
   double* corrects;
@@ -31,7 +32,10 @@ private:
   double* hiddenLayerVals;
   double* outputLayerVals;
   double* inputLayerVals;
+  double* patternValues;
   double patternMax;
+  double sysErr;
+  bool memFlag;
   string weights;
   string patterns;
   string outputs;

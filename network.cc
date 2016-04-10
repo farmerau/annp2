@@ -15,6 +15,8 @@ network::network(){
   patterns = "patterns.in";
   outputs = "outputs.out";
   correct = "correct.out";
+  sysErr = 1;
+  memFlag = false;
 }
 
 void network::initLayers(int x){
@@ -32,9 +34,26 @@ int network::getNumLayers(){
 
 void network::go(){
   readWeights();
+  readPatterns();
   cout << "Options:\n1.)Production Mode\n2.)Training Mode\n>>";
   cin >> mode;
-  feedForward();
+  if (mode == 1){
+    feedForward();
+  }
+  else{
+    int counter = 0;
+    while(sysErr > 0.2){
+      counter ++;
+      if (counter%100000==0){
+        cout << "Current sysErr: " << sysErr  << " Gen: " << counter << "\n";
+      }
+      feedForward();
+      train();
+      delete[] errors;
+      delete[] corrects;
+      delete[] solutions;
+    }
+  }
 }
 
 void network::readWeights(){
@@ -86,7 +105,7 @@ void network::readWeights(){
   cout << weights << " loaded successfully!\n";
 }
 
-void network::feedForward(){
+void network::readPatterns(){
   cout << "Reading " << patterns << "...\n";
   patternFile.open(patterns.c_str());
   if (patternFile.fail()){
@@ -94,24 +113,35 @@ void network::feedForward(){
     exit(1);
   }
   patternFile >> numPat;
-  int inputs;
   patternFile >> inputs;
   patternFile >> patternMax;
   if (inputs != layers[0].getNumNodes()){
     cout << patterns << " incompatible with this network.";
     exit(2);
   }
-  if (mode == 2){
+  patternValues = new double[numPat*inputs];
+  for (int i = 0; i < numPat*inputs; i++){
+    patternFile >> patternValues[i];
+  }
+  patternFile.close();
+}
+
+void network::feedForward(){
+  if ((mode == 2)&& !memFlag){
     inputLayerVals = new double[numPat*layers[0].getNumNodes()];
     hiddenLayerVals = new double[numPat*layers[1].getNumNodes()];
     outputLayerVals = new double[numPat*layers[2].getNumNodes()];
+    memFlag = true;
   }
   outFile.open(outputs.c_str());
   outFile << numPat << "\n";
+  int counter = 0;
   for (int cycle = 0; cycle < numPat; cycle++){
+
     for (int i = 0; i < inputs; i++){
       double temp;
-      patternFile >> temp;
+      temp = patternValues[cycle*numPat + i];
+      counter ++;
       layers[0].getNode(i).setVal(temp/patternMax);
       if (mode == 2){
         inputLayerVals[layers[0].getNumNodes()*i + cycle] = layers[0].getNode(i).getVal();
@@ -139,34 +169,22 @@ void network::feedForward(){
         outputLayerVals[layers[2].getNumNodes()*i + cycle] = layers[2].getNode(i).getVal();
       }
       hiddenSum = 0;
-      cout << " " << layers[2].getNode(i).getVal() << " ";
       if (i != 0){
         outFile << " ";
       }
       outFile << layers[2].getNode(i).getVal();
     }
-
-
-    cout << "\n";
     outFile << "\n";
   }
   outFile.close();
-  cout << outputs << " written!\n";
-  patternFile.close();
-  if (mode == 2){
-    train();
-  }
 }
 
 void network::train(){
-  cout << "Starting training procedures...\n";
-  cout << "Loading reference file " << correct << "...\n";
   correctFile.open(correct.c_str());
   if (correctFile.fail()){
     cout << "Failure opening " << correct << "\n";
     exit (2);
   }
-  cout << "Loading results from feed forward mechanism...\n";
   trainOut.open(outputs.c_str());
   if (trainOut.fail()){
     cout << "Failure opening " << outputs << "\n";
@@ -188,6 +206,7 @@ void network::train(){
 }
 
 void network::calculateError(int cPatterns, int cOutputs){
+  double sum = 0.0;
   errors = new double[(cPatterns*cOutputs)];
   corrects = new double[(cPatterns*cOutputs)];
   solutions = new double[(cPatterns*cOutputs)];
@@ -198,7 +217,11 @@ void network::calculateError(int cPatterns, int cOutputs){
     correctFile >> temp;
     corrects[i] = temp;
     errors[i] = corrects[i]-solutions[i];
+    sum += pow(errors[i], 2);
   }
+  correctFile.close();
+  trainOut.close();
+  sysErr = sum * 0.5;
 }
 
 void network::adjustOutWeights(){
@@ -232,8 +255,4 @@ void network::adjustHiddenWeights(){
       }
     }
   }
-}
-
-void network::adjustInputWeights(){
-
 }
