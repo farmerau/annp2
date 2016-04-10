@@ -249,9 +249,9 @@ void network::adjustHiddenWeights(){
           temp += errors[i] * hiddenLayerVals[layers[1].getNumNodes()*i + k];
 
         sum += (inputLayerVals[layers[0].getNumNodes()*j + k] * (1-inputLayerVals[layers[0].getNumNodes()*j + k])) * temp * inputLayerVals[layers[0].getNumNodes()*j + k];
-      }
-      layers[1].getNode(i).setWeight(j, (layers[1].getNode(i).getWeight(j)-(b*sum)));
-      sum = 0;
+        }
+        layers[1].getNode(i).setWeight(j, (layers[1].getNode(i).getWeight(j)-(b*sum)));
+        sum = 0;
       }
     }
   }
